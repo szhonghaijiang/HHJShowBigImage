@@ -156,7 +156,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         return fixSize
     }
     
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         
         let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
@@ -207,7 +207,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }
     
     //MARK:- scrollView的代理方法，用来切换pageController的currentPage
-    func scrollViewDidScroll(scrollView: UIScrollView) {
+    public func scrollViewDidScroll(scrollView: UIScrollView) {
         if imageViews != nil && imageViews.count == 1 { return }
         if images != nil && images.count == 1 { return }
         
@@ -282,7 +282,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         //        fatalError("init(coder:) has not been implemented")
     }
