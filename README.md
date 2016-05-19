@@ -11,7 +11,9 @@ pod 'AFNetworking', '~> 3.0'
 ```
 # 如何在项目中使用
 HHJShowBigImage有两个构造器：
-1 public init?(imageViews: [UIImageView], currentIndex: Int)
+
+1.public init?(imageViews: [UIImageView], currentIndex: Int)
     这个构造器是需要传入UIImageView的数组，currentIndex表示放大后显示第几张图片，HHJShowBigImage显示时的动画是从UIImageView书中的第currentIndex个UIImageView的尺寸变换的。HHJShowBigImage消失的尺寸变换搭配当前放大的UIImageView。
-2 public init?(originImages: [UIImage], currentIndex: Int)
+    
+2.public init?(originImages: [UIImage], currentIndex: Int)
     这个构造器是穿件UIImage的数组，currentIndex表示放大后显示第几张图片。
