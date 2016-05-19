@@ -12,7 +12,7 @@ var HHJShowBigScreenWidth: CGFloat { return UIScreen.mainScreen().bounds.size.wi
 var HHJShowBigScreenHeight: CGFloat { return UIScreen.mainScreen().bounds.size.height}
 
 
-class HMShowBigImageView: UIView, UIScrollViewDelegate {
+public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     var pageCount: UIPageControl!
     var images: [UIImage]!
     var imageViews: [UIImageView]!
@@ -24,7 +24,7 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
     var imageScroll: UIScrollView!
     let bacgView = UIView()
 
-    init?(imageViews: [UIImageView], currentIndex: Int) {
+    public init?(imageViews: [UIImageView], currentIndex: Int) {
         super.init(frame: UIScreen.mainScreen().bounds)
         setDefaultParam()
         //先判断是否有图片，如果没有图片则返回
@@ -52,7 +52,7 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         self.showOrDismiss(show: true)
     }
     
-    init?(originImages: [UIImage], currentIndex: Int) {
+    public init?(originImages: [UIImage], currentIndex: Int) {
         super.init(frame: UIScreen.mainScreen().bounds)
         setDefaultParam()
         
