@@ -7,7 +7,7 @@ HHJShowBigImage是一个用来放大图片的iOS工具，它继承自UIView，�
 platform :ios, '8.0'
 use_frameworks!
 
-pod 'AFNetworking', '~> 3.0'
+pod 'HHJShowBigImage', '~> 0.0.4'
 ```
 # 如何在项目中使用
 HHJShowBigImage有两个构造器：
