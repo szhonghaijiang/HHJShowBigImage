@@ -12,7 +12,7 @@ var HHJShowBigScreenWidth: CGFloat { return UIScreen.mainScreen().bounds.size.wi
 var HHJShowBigScreenHeight: CGFloat { return UIScreen.mainScreen().bounds.size.height}
 
 
-public class HMShowBigImageView: UIView, UIScrollViewDelegate {
+class HMShowBigImageView: UIView, UIScrollViewDelegate {
     var pageCount: UIPageControl!
     var images: [UIImage]!
     var imageViews: [UIImageView]!
@@ -23,16 +23,18 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     var HHJScrollImageViewHorizonGap: CGFloat!
     var imageScroll: UIScrollView!
     let bacgView = UIView()
-
-    public init?(imageViews: [UIImageView], currentIndex: Int) {
+    
+    var HHJContentMode = UIViewContentMode.ScaleAspectFill
+    
+    init?(imageViews: [UIImageView], currentIndex: Int) {
         super.init(frame: UIScreen.mainScreen().bounds)
         setDefaultParam()
         //先判断是否有图片，如果没有图片则返回
         if imageViews.isEmpty { return nil }
-
+        
         self.imageViews = imageViews
         self.scrollImageVies = []
-        
+        HHJContentMode = self.imageViews[0].contentMode
         
         //创建一个 UIScrollView 用来放置 图片
         let imageScroll = creatScrollView()
@@ -52,7 +54,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         self.showOrDismiss(show: true)
     }
     
-    public init?(originImages: [UIImage], currentIndex: Int) {
+    init?(originImages: [UIImage], currentIndex: Int) {
         super.init(frame: UIScreen.mainScreen().bounds)
         setDefaultParam()
         
@@ -61,7 +63,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         
         self.images = originImages
         self.scrollImageVies = []
-       
+        
         //创建一个 UIScrollView 用来放置 图片
         let imageScroll = creatScrollView()
         self.imageScroll = imageScroll
@@ -156,7 +158,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         return fixSize
     }
     
-    override public func layoutSubviews() {
+    override func layoutSubviews() {
         super.layoutSubviews()
         
         let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
@@ -207,7 +209,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }
     
     //MARK:- scrollView的代理方法，用来切换pageController的currentPage
-    public func scrollViewDidScroll(scrollView: UIScrollView) {
+    func scrollViewDidScroll(scrollView: UIScrollView) {
         if imageViews != nil && imageViews.count == 1 { return }
         if images != nil && images.count == 1 { return }
         
@@ -231,6 +233,8 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         let currentIndex = self.pageCount.currentPage
         let window = UIApplication.sharedApplication().keyWindow!
         let animationImageView = UIImageView()
+        animationImageView.contentMode = HHJContentMode
+        animationImageView.clipsToBounds = true
         var orginFrame: CGRect
         if self.imageViews != nil {
             let originImageView = self.imageViews[currentIndex]
@@ -261,7 +265,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         }
         window.addSubview(animationImageView)
         
-        UIView.animateWithDuration(0.25, delay: 0, options: .OverrideInheritedCurve, animations: { () -> Void in
+        UIView.animateWithDuration(0.5, delay: 0, options: .OverrideInheritedCurve, animations: { () -> Void in
             
             if show {
                 animationImageView.frame = endFrame
@@ -271,18 +275,18 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
                 self.alpha = 0
             }
             
-            }) { (bool) -> Void in
-                
-                animationImageView.removeFromSuperview()
-                if show {
-                    scrollView.alpha = 1
-                } else {
-                    self.removeFromSuperview()
-                }
+        }) { (bool) -> Void in
+            
+            animationImageView.removeFromSuperview()
+            if show {
+                scrollView.alpha = 1
+            } else {
+                self.removeFromSuperview()
+            }
         }
     }
     
-    required public init?(coder aDecoder: NSCoder) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         //        fatalError("init(coder:) has not been implemented")
     }
