@@ -1,12 +1,12 @@
 Pod::Spec.new do |s|
   s.name     = 'HHJShowBigImage'
-  s.version  = '0.0.4'
+  s.version  = '0.0.5'
   s.license  = 'MIT'
   s.author   = {'szulmj' => 'https://github.com/szhonghaijiang' }
   s.homepage = 'https://github.com/szhonghaijiang/HHJShowBigImage'
   s.summary  = 'Show the big image from imageViews or images by swift'
 
-  s.source   = { :git => 'https://github.com/szhonghaijiang/HHJShowBigImage.git', :tag => '0.0.4'}
+  s.source   = { :git => 'https://github.com/szhonghaijiang/HHJShowBigImage.git', :tag => '0.0.5'}
   s.source_files = 'HHJShowBig', 'HHJShowBig/*.swift'
   s.framework = 'UIKit'
   s.requires_arc = true
