@@ -8,8 +8,6 @@
 
 import UIKit
 
-typealias TextBlock = (_ index: Int) -> String
-
 private var HHJShowBigScreenWidth: CGFloat { return UIScreen.main.bounds.size.width }
 private var HHJShowBigScreenHeight: CGFloat { return UIScreen.main.bounds.size.height}
 
@@ -20,25 +18,25 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     private var scrollImageVies: [UIImageView]!
     
     /// 底部pageControl的颜色
-    var HHJCurrentPageIndicatorTintColor: UIColor!
-    var HHJpageIndicatorTintColor: UIColor!
+    public var HHJCurrentPageIndicatorTintColor: UIColor!
+    public var HHJpageIndicatorTintColor: UIColor!
     
     
     /// 背景颜色，默认是 UIColor.black.withAlphaComponent(0.75)
-    var HHJBackColor: UIColor! {
+    public var HHJBackColor: UIColor! {
         didSet {
             bacgView.backgroundColor = HHJBackColor
         }
     }
     
     /// 图片间隔
-    var HHJScrollImageViewHorizonGap: CGFloat!
+    public var HHJScrollImageViewHorizonGap: CGFloat!
     
     private var imageScroll: UIScrollView!
     private let bacgView = UIView()
     
     /// 是否显示状态栏
-    var hiddenStatusBar = false {
+    public var hiddenStatusBar = false {
         didSet {
             layoutIfNeeded()
             myWindow.windowLevel = hiddenStatusBar ? UIWindowLevelStatusBar + 1 : UIWindowLevelNormal
@@ -46,7 +44,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }
     
     /// 顶部文字出现的block，如果实现了这个block，则会隐藏底部pageControl
-    var labelTextBlock: TextBlock? {
+    public var labelTextBlock: ((_ index: Int) -> String)? {
         didSet {
             pageCount.isHidden = labelTextBlock != nil
         }
@@ -63,7 +61,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }()
     
     /// 顶部文字的底部图片
-    var topLabelImage: UIImage? {
+    public var topLabelImage: UIImage? {
         didSet {
             if let img = topLabelImage {
                 let iv = UIImageView(frame: CGRect(x: 0, y: 0, width: HHJShowBigScreenWidth, height: 64))
@@ -74,7 +72,7 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }
     
     /// 图片的contentMode
-    var HHJContentMode = UIViewContentMode.scaleAspectFill
+    public var HHJContentMode = UIViewContentMode.scaleAspectFill
     
     private let myWindow: UIWindow = {
         let wd = UIWindow(frame: UIScreen.main.bounds)
@@ -83,18 +81,19 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }()
     
     /// 显示的动画时长
-    var showDuration = 0.5
+    public var showDuration = 0.5
     
     /// 是否允许图片缩放，默认允许
-    var isCanScale = true
+    public var isCanScale = true
     
     /// 缩放的最大比例，默认是4倍
-    var maxScale = CGFloat(4)
+    public var maxScale = CGFloat(4)
     
     /// 缩放的最小比例，默认是0.25
-    var minScale = CGFloat(0.25)
+    public var minScale = CGFloat(0.25)
     
-    init?(imageViews: [UIImageView], currentIndex: Int) {
+    ///初始化，传入一个图片容器数组，这个方法的显示和消失动画会从图片容器的位置开始和结束，需要指定从第几张图片开始，默认是从头开始
+    public init?(imageViews: [UIImageView], currentIndex: Int) {
         super.init(frame: UIScreen.main.bounds)
         setDefaultParam()
         //先判断是否有图片，如果没有图片则返回
@@ -121,7 +120,8 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         imageScroll.contentOffset = CGPoint(x: scrollWith * min(CGFloat(currentIndex), CGFloat(imageViews.count - 1)), y: 0)
     }
     
-    init?(originImages: [UIImage], currentIndex: Int) {
+    ///初始化，传入一个图片数组，需要指定从第几张图片开始，默认是从头开始
+    public init?(originImages: [UIImage], currentIndex: Int = 0) {
         super.init(frame: UIScreen.main.bounds)
         setDefaultParam()
         
@@ -148,8 +148,8 @@ public class HMShowBigImageView: UIView, UIScrollViewDelegate {
         imageScroll.contentOffset = CGPoint(x: scrollWith * min(CGFloat(currentIndex), CGFloat(originImages.count - 1)), y: 0)
     }
     
-    
-    func show() {
+    /// 显示
+    public func show() {
         showOrDismiss(show: true)
     }
     
