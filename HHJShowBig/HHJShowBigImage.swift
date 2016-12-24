@@ -8,33 +8,101 @@
 
 import UIKit
 
-var HHJShowBigScreenWidth: CGFloat { return UIScreen.mainScreen().bounds.size.width }
-var HHJShowBigScreenHeight: CGFloat { return UIScreen.mainScreen().bounds.size.height}
+typealias TextBlock = (_ index: Int) -> String
 
+private var HHJShowBigScreenWidth: CGFloat { return UIScreen.main.bounds.size.width }
+private var HHJShowBigScreenHeight: CGFloat { return UIScreen.main.bounds.size.height}
 
 class HMShowBigImageView: UIView, UIScrollViewDelegate {
-    var pageCount: UIPageControl!
-    var images: [UIImage]!
-    var imageViews: [UIImageView]!
-    var scrollImageVies: [UIImageView]!
+    private var pageCount: HHJPageControl!
+    private var images: [UIImage]!
+    private var imageViews: [UIImageView]!
+    private var scrollImageVies: [UIImageView]!
+    
+    /// 底部pageControl的颜色
     var HHJCurrentPageIndicatorTintColor: UIColor!
     var HHJpageIndicatorTintColor: UIColor!
-    var HHJBackColor: UIColor!
-    var HHJScrollImageViewHorizonGap: CGFloat!
-    var imageScroll: UIScrollView!
-    let bacgView = UIView()
     
-    var HHJContentMode = UIViewContentMode.ScaleAspectFill
+    
+    /// 背景颜色，默认是 UIColor.black.withAlphaComponent(0.75)
+    var HHJBackColor: UIColor! {
+        didSet {
+            bacgView.backgroundColor = HHJBackColor
+        }
+    }
+    
+    /// 图片间隔
+    var HHJScrollImageViewHorizonGap: CGFloat!
+    
+    private var imageScroll: UIScrollView!
+    private let bacgView = UIView()
+    
+    /// 是否显示状态栏
+    var hiddenStatusBar = false {
+        didSet {
+            layoutIfNeeded()
+            myWindow.windowLevel = hiddenStatusBar ? UIWindowLevelStatusBar + 1 : UIWindowLevelNormal
+        }
+    }
+    
+    /// 顶部文字出现的block，如果实现了这个block，则会隐藏底部pageControl
+    var labelTextBlock: TextBlock? {
+        didSet {
+            pageCount.isHidden = labelTextBlock != nil
+        }
+    }
+    
+    //顶部文字控件
+    private lazy var topLbale: UILabel = {
+        let label = UILabel(frame: CGRect(x: 0, y: 0, width: HHJShowBigScreenWidth, height: 64))
+        label.textColor = UIColor.white
+        label.font = UIFont.systemFont(ofSize: 18)
+        label.textAlignment = .center
+        self.addSubview(label)
+        return label
+    }()
+    
+    /// 顶部文字的底部图片
+    var topLabelImage: UIImage? {
+        didSet {
+            if let img = topLabelImage {
+                let iv = UIImageView(frame: CGRect(x: 0, y: 0, width: HHJShowBigScreenWidth, height: 64))
+                iv.image = img
+                self.topLbale.addSubview(iv)
+            }
+        }
+    }
+    
+    /// 图片的contentMode
+    var HHJContentMode = UIViewContentMode.scaleAspectFill
+    
+    private let myWindow: UIWindow = {
+        let wd = UIWindow(frame: UIScreen.main.bounds)
+        wd.makeKeyAndVisible()
+        return wd
+    }()
+    
+    /// 显示的动画时长
+    var showDuration = 0.5
+    
+    /// 是否允许图片缩放，默认允许
+    var isCanScale = true
+    
+    /// 缩放的最大比例，默认是4倍
+    var maxScale = CGFloat(4)
+    
+    /// 缩放的最小比例，默认是0.25
+    var minScale = CGFloat(0.25)
     
     init?(imageViews: [UIImageView], currentIndex: Int) {
-        super.init(frame: UIScreen.mainScreen().bounds)
+        super.init(frame: UIScreen.main.bounds)
         setDefaultParam()
         //先判断是否有图片，如果没有图片则返回
         if imageViews.isEmpty { return nil }
         
         self.imageViews = imageViews
         self.scrollImageVies = []
-        HHJContentMode = self.imageViews[0].contentMode
+        HHJContentMode = self.imageViews[currentIndex].contentMode
         
         //创建一个 UIScrollView 用来放置 图片
         let imageScroll = creatScrollView()
@@ -44,18 +112,17 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         let scrollWith = imageScroll.bounds.size.width
         imageScroll.contentSize = CGSize(width: scrollWith * CGFloat(imageViews.count), height: imageScroll.bounds.size.height)
         
-        for (index, originImageView) in imageViews.enumerate() {
-            creatScrollImageView(nil, originImageView: originImageView, imageScroll: imageScroll, index: index)
+        for (index, originImageView) in imageViews.enumerated() {
+            creatScrollImageView(image: nil, originImageView: originImageView, imageScroll: imageScroll, index: index)
         }
         
-        if imageViews.count > 0 { creatPageController(imageViews.count, currentPage: currentIndex) }
+        if imageViews.count > 0 { creatPageController(numberOfPages: imageViews.count, currentPage: currentIndex) }
         
         imageScroll.contentOffset = CGPoint(x: scrollWith * min(CGFloat(currentIndex), CGFloat(imageViews.count - 1)), y: 0)
-        self.showOrDismiss(show: true)
     }
     
     init?(originImages: [UIImage], currentIndex: Int) {
-        super.init(frame: UIScreen.mainScreen().bounds)
+        super.init(frame: UIScreen.main.bounds)
         setDefaultParam()
         
         //先判断是否有图片，如果没有图片则返回
@@ -72,16 +139,19 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         let scrollWith = imageScroll.bounds.size.width
         imageScroll.contentSize = CGSize(width: scrollWith * CGFloat(originImages.count), height: imageScroll.bounds.size.height)
         
-        for (index, originImage) in originImages.enumerate() {
-            creatScrollImageView(originImage, originImageView: nil, imageScroll: imageScroll, index: index)
+        for (index, originImage) in originImages.enumerated() {
+            creatScrollImageView(image: originImage, originImageView: nil, imageScroll: imageScroll, index: index)
         }
         
-        if originImages.count > 0 { creatPageController(originImages.count, currentPage: currentIndex) }
+        if originImages.count > 0 { creatPageController(numberOfPages: originImages.count, currentPage: currentIndex) }
         
         imageScroll.contentOffset = CGPoint(x: scrollWith * min(CGFloat(currentIndex), CGFloat(originImages.count - 1)), y: 0)
-        self.showOrDismiss(show: true)
     }
     
+    
+    func show() {
+        showOrDismiss(show: true)
+    }
     
     //frame: CGRect,
     private func creatScrollImageView(image: UIImage?, originImageView: UIImageView?, imageScroll: UIScrollView, index: Int) {
@@ -95,14 +165,16 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         } else {
             tempImage = image
         }
-        let imageOriginSize = tempImage != nil ? tempImage!.size : CGSizeZero
+        let imageOriginSize = tempImage != nil ? tempImage!.size : CGSize(width: 0, height: 0)
         let imageSize = self.getFitSize(maxSize: CGSize(width: HHJShowBigScreenWidth, height: scorllHeight), orSize: imageOriginSize)
         let imageX = (HHJShowBigScreenWidth - imageSize.width) * 0.5
         let imageY = (scorllHeight - imageSize.height) * 0.5
         
         let imageView = UIImageView.init(frame: CGRect(x: CGFloat(index) * scrollWith + imageX, y: imageY, width: imageSize.width, height: imageSize.height))
-        imageView.userInteractionEnabled = true
+        imageView.isUserInteractionEnabled = true
         imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(HMShowBigImageView.imageTap)))
+        imageView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(HMShowBigImageView.imageScaleBig(gesture:))))
+        
         imageView.image = tempImage
         scrollImageVies.append(imageView)
         imageScroll.addSubview(imageView)
@@ -113,22 +185,22 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
      */
     private func creatScrollView() -> UIScrollView {
         //获得屏幕长宽和状态栏高度
-        let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        let statusBarHeight = UIApplication.shared.statusBarFrame.size.height
         let imageScroll = UIScrollView(frame: CGRect(x: 0, y: statusBarHeight, width: HHJShowBigScreenWidth + HHJScrollImageViewHorizonGap, height: HHJShowBigScreenHeight - statusBarHeight))
         imageScroll.showsHorizontalScrollIndicator = false
-        imageScroll.pagingEnabled = true
-        imageScroll.backgroundColor = UIColor.clearColor()
+        imageScroll.isPagingEnabled = true
+        imageScroll.backgroundColor = UIColor.clear
         imageScroll.delegate = self
         return imageScroll
     }
     
     /**
-     创建一个UIPageControl
+     创建一个HHJPageControl
      */
     private func creatPageController(numberOfPages: Int, currentPage: Int) {
         let pageCountBottomGap = 40.0
         let pageCountHeight = 20.0
-        let pageCount = UIPageControl(frame: CGRect(x: 0, y: Double(HHJShowBigScreenHeight) - pageCountBottomGap - pageCountHeight, width: Double(HHJShowBigScreenWidth), height: pageCountHeight))
+        let pageCount = HHJPageControl(frame: CGRect(x: 0, y: Double(HHJShowBigScreenHeight) - pageCountBottomGap - pageCountHeight, width: Double(HHJShowBigScreenWidth), height: pageCountHeight))
         self.pageCount = pageCount
         pageCount.currentPageIndicatorTintColor = HHJCurrentPageIndicatorTintColor
         pageCount.pageIndicatorTintColor = HHJpageIndicatorTintColor
@@ -161,16 +233,16 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
     override func layoutSubviews() {
         super.layoutSubviews()
         
-        let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.size.height
+        let statusBarHeight = hiddenStatusBar ? 0 : UIApplication.shared.statusBarFrame.size.height
         imageScroll.frame = CGRect(x: 0, y: statusBarHeight, width: HHJShowBigScreenWidth + HHJScrollImageViewHorizonGap, height: HHJShowBigScreenHeight - statusBarHeight)
         
         let scrollWith = imageScroll.bounds.size.width
         let scorllHeight = imageScroll.bounds.size.height
         imageScroll.contentSize = CGSize(width: scrollWith * CGFloat(scrollImageVies.count), height: imageScroll.bounds.size.height)
         imageScroll.contentOffset = CGPoint(x: scrollWith * CGFloat(self.pageCount.currentPage), y: 0)
-        for (index, imageView) in scrollImageVies.enumerate() {
+        for (index, imageView) in scrollImageVies.enumerated() {
             let tempImage = imageView.image
-            let imageOriginSize = tempImage != nil ? tempImage!.size : CGSizeZero
+            let imageOriginSize = tempImage != nil ? tempImage!.size : CGSize(width: 0, height: 0)
             let imageSize = self.getFitSize(maxSize: CGSize(width: HHJShowBigScreenWidth, height: scorllHeight), orSize: imageOriginSize)
             let imageX = (HHJShowBigScreenWidth - imageSize.width) * 0.5
             let imageY = (scorllHeight - imageSize.height) * 0.5
@@ -180,40 +252,46 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         let pageCountBottomGap = 40.0
         let pageCountHeight = 20.0
         pageCount.frame = CGRect(x: 0, y: Double(HHJShowBigScreenHeight) - pageCountBottomGap - pageCountHeight, width: Double(HHJShowBigScreenWidth), height: pageCountHeight)
-        
-        let count = pageCount.subviews.count
-        if count > 0 {
-            let firstView = pageCount.subviews.first
-            let subViewWidth = firstView!.bounds.size.width
-            let subViewHeight = firstView!.bounds.size.height
-            let allSubViewWidth = (CGFloat(count) * 2 - 1) * subViewWidth
-            let leftGap = (HHJShowBigScreenWidth - allSubViewWidth) * 0.5
-            let topGap = (pageCount.bounds.size.height - subViewHeight) * 0.5
-            let subViewWidth2x = subViewWidth * 2
-            for (index, subView) in pageCount.subviews.enumerate() {
-                subView.frame = CGRect(x: leftGap + subViewWidth2x * CGFloat(index), y: topGap, width: subViewWidth, height: subViewHeight)
-            }
-        }
     }
     
     private func setDefaultParam() {
-        HHJCurrentPageIndicatorTintColor = UIColor.orangeColor()
-        HHJBackColor = UIColor.blackColor().colorWithAlphaComponent(0.75)
-        HHJpageIndicatorTintColor = UIColor.whiteColor()
+        HHJCurrentPageIndicatorTintColor = UIColor.orange
+        HHJBackColor = UIColor.black.withAlphaComponent(0.75)
+        HHJpageIndicatorTintColor = UIColor.white
         HHJScrollImageViewHorizonGap = 10
         
         //设置背景和状态栏
-        bacgView.backgroundColor = HHJBackColor
         addSubview(bacgView)
         bacgView.frame = CGRect(x: 0, y: 0, width: max(HHJShowBigScreenWidth, HHJShowBigScreenHeight) + 100, height: max(HHJShowBigScreenWidth, HHJShowBigScreenHeight) + 100)
     }
     
     //MARK:- scrollView的代理方法，用来切换pageController的currentPage
-    func scrollViewDidScroll(scrollView: UIScrollView) {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        let currentPage = getCurrentCount(scrollView)
+        if scrollImageVies.count > currentPage {
+            let iv = scrollImageVies[currentPage]
+            let originTransForm = CGAffineTransform(scaleX: 1.0, y: 1.0)
+            if iv.transform.__equalTo(originTransForm) { return }
+            UIView.animate(withDuration: 0.1, animations: {
+                iv.transform = originTransForm
+            })
+        }
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if imageViews != nil && imageViews.count == 1 { return }
         if images != nil && images.count == 1 { return }
         
-        let scWidht = UIScreen.mainScreen().bounds.size.width
+        let currentPage = getCurrentCount(scrollView)
+        if let block = labelTextBlock {
+            topLbale.text = block(currentPage)
+        } else {
+            pageCount.currentPage = currentPage
+        }
+    }
+    
+    private func getCurrentCount(_ scrollView: UIScrollView) -> Int{
+        let scWidht = UIScreen.main.bounds.size.width
         let contentX = scrollView.contentOffset.x
         var currentPage: Int = Int(contentX / scWidht)
         if currentPage < 0 {
@@ -221,28 +299,48 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         } else if currentPage > pageCount.numberOfPages {
             currentPage = pageCount.numberOfPages
         }
-        pageCount.currentPage = currentPage
+        return currentPage
     }
     
     @objc private func imageTap(){
         self.showOrDismiss(show: false)
     }
     
+    
+    private var currentSacle: CGFloat = 1
+    @objc private func imageScaleBig(gesture: UIPinchGestureRecognizer) {
+        if !isCanScale { return }
+        if let iv = gesture.view as? UIImageView {
+            var transform = iv.transform
+            let scale = gesture.scale - currentSacle + 1.0
+            transform = transform.scaledBy(x: scale, y: scale)
+            if transform.a < minScale {
+                transform = CGAffineTransform(scaleX: minScale, y: minScale)
+            } else if transform.a > maxScale {
+                transform = CGAffineTransform(scaleX: maxScale, y: maxScale)
+            }
+            iv.transform = transform
+            currentSacle = gesture.scale
+            if gesture.state == .ended {
+                currentSacle = 1.0
+            }
+        }
+    }
+    
     //显示或者消失
-    private func showOrDismiss(show show: Bool) {
+    private func showOrDismiss(show: Bool) {
         let currentIndex = self.pageCount.currentPage
-        let window = UIApplication.sharedApplication().keyWindow!
         let animationImageView = UIImageView()
         animationImageView.contentMode = HHJContentMode
         animationImageView.clipsToBounds = true
         var orginFrame: CGRect
         if self.imageViews != nil {
             let originImageView = self.imageViews[currentIndex]
-            orginFrame = window.convertRect(originImageView.frame, fromView: originImageView.superview)
+            orginFrame = myWindow.convert(originImageView.frame, from: originImageView.superview)
             animationImageView.image = originImageView.image
         } else {
-            orginFrame = CGRectZero
-            orginFrame.origin = window.center;
+            orginFrame = CGRect(x: 0, y: 0, width: 0, height: 0)
+            orginFrame.origin = myWindow.center;
             animationImageView.image = images[currentIndex]
         }
         
@@ -256,17 +354,16 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
         
         
         if show {
-            window.addSubview(self)
+            myWindow.addSubview(self)
             self.alpha = 0
             animationImageView.frame = orginFrame
         } else {
             self.alpha = 1
             animationImageView.frame = endFrame
         }
-        window.addSubview(animationImageView)
+        myWindow.addSubview(animationImageView)
         
-        UIView.animateWithDuration(0.5, delay: 0, options: .OverrideInheritedCurve, animations: { () -> Void in
-            
+        UIView.animate(withDuration: showDuration, delay: 0, options: .curveEaseOut, animations: { () -> Void in
             if show {
                 animationImageView.frame = endFrame
                 self.alpha = 1
@@ -274,9 +371,7 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
                 animationImageView.frame = orginFrame
                 self.alpha = 0
             }
-            
         }) { (bool) -> Void in
-            
             animationImageView.removeFromSuperview()
             if show {
                 scrollView.alpha = 1
@@ -289,5 +384,24 @@ class HMShowBigImageView: UIView, UIScrollViewDelegate {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         //        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class HHJPageControl: UIPageControl {
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let count = subviews.count
+        if count > 0 {
+            let firstView = subviews.first
+            let subViewWidth = firstView!.bounds.size.width
+            let subViewHeight = firstView!.bounds.size.height
+            let allSubViewWidth = (CGFloat(count) * 2 - 1) * subViewWidth
+            let leftGap = (HHJShowBigScreenWidth - allSubViewWidth) * 0.5
+            let topGap = (bounds.size.height - subViewHeight) * 0.5
+            let subViewWidth2x = subViewWidth * 2
+            for (index, subView) in subviews.enumerated() {
+                subView.frame = CGRect(x: leftGap + subViewWidth2x * CGFloat(index), y: topGap, width: subViewWidth, height: subViewHeight)
+            }
+        }
     }
 }
