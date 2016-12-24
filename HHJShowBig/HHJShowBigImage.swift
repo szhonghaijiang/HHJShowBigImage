@@ -13,7 +13,7 @@ typealias TextBlock = (_ index: Int) -> String
 private var HHJShowBigScreenWidth: CGFloat { return UIScreen.main.bounds.size.width }
 private var HHJShowBigScreenHeight: CGFloat { return UIScreen.main.bounds.size.height}
 
-class HMShowBigImageView: UIView, UIScrollViewDelegate {
+open class HMShowBigImageView: UIView, UIScrollViewDelegate {
     private var pageCount: HHJPageControl!
     private var images: [UIImage]!
     private var imageViews: [UIImageView]!
