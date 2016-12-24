@@ -13,7 +13,7 @@ typealias TextBlock = (_ index: Int) -> String
 private var HHJShowBigScreenWidth: CGFloat { return UIScreen.main.bounds.size.width }
 private var HHJShowBigScreenHeight: CGFloat { return UIScreen.main.bounds.size.height}
 
-open class HMShowBigImageView: UIView, UIScrollViewDelegate {
+public class HMShowBigImageView: UIView, UIScrollViewDelegate {
     private var pageCount: HHJPageControl!
     private var images: [UIImage]!
     private var imageViews: [UIImageView]!
@@ -230,7 +230,7 @@ open class HMShowBigImageView: UIView, UIScrollViewDelegate {
         return fixSize
     }
     
-    override func layoutSubviews() {
+    override public func layoutSubviews() {
         super.layoutSubviews()
         
         let statusBarHeight = hiddenStatusBar ? 0 : UIApplication.shared.statusBarFrame.size.height
@@ -266,7 +266,7 @@ open class HMShowBigImageView: UIView, UIScrollViewDelegate {
     }
     
     //MARK:- scrollView的代理方法，用来切换pageController的currentPage
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+    public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         let currentPage = getCurrentCount(scrollView)
         if scrollImageVies.count > currentPage {
             let iv = scrollImageVies[currentPage]
@@ -278,7 +278,7 @@ open class HMShowBigImageView: UIView, UIScrollViewDelegate {
         }
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if imageViews != nil && imageViews.count == 1 { return }
         if images != nil && images.count == 1 { return }
         
@@ -381,7 +381,7 @@ open class HMShowBigImageView: UIView, UIScrollViewDelegate {
         }
     }
     
-    required init?(coder aDecoder: NSCoder) {
+    required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         //        fatalError("init(coder:) has not been implemented")
     }
