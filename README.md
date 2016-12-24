@@ -1,7 +1,7 @@
 # HHJShowBigImage
 HHJShowBigImage是一个用来放大图片的iOS工具，它继承自UIView，使用它可以很方便的方法图片，点击图片的时候可以很方便的让HHJShowBigImage消失，中间的切换带了动画效果。
 # 如何在项目中导入
-* HHJShowBigImage只有一个文件，就是HHJShowBigImage.swift，你可以把它直接拖进过程里面。
+* HHJShowBigImage只有一个文件，就是HHJShowBigImage.swift，你可以把它直接拖进过程里面，使用Swift3.0的版本。
 * 当然我是建议用cocospod导入的，用cocospod导入的最低版本是iOS8：
 ```
 platform :ios, '8.0'
