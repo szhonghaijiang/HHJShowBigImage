@@ -21,36 +21,36 @@ HHJShowBigImage有两个构造器：
 * 然后调用show()：show()函数是用来显示图片放大的，它有一个动画的过程。
 
 * 在构造了以后还可以设置以下几个属性:
-/// 底部pageControl的颜色
+底部pageControl的颜色
 public var HHJCurrentPageIndicatorTintColor: UIColor!
 public var HHJpageIndicatorTintColor: UIColor!
 
-/// 背景颜色，默认是 UIColor.black.withAlphaComponent(0.75)
+背景颜色，默认是 UIColor.black.withAlphaComponent(0.75)
 public var HHJBackColor: UIColor!
 
-/// 图片间隔
+图片间隔
 public var HHJScrollImageViewHorizonGap: CGFloat!
 
-/// 是否显示状态栏
+是否显示状态栏
 public var hiddenStatusBar: Bool
 
-/// 顶部文字出现的block，如果实现了这个block，则会隐藏底部pageControl
+顶部文字出现的block，如果实现了这个block，则会隐藏底部pageControl
 public var labelTextBlock: ((Int) -> String)?
 
-/// 顶部文字的底部图片
+顶部文字的底部图片
 public var topLabelImage: UIImage?
 
-/// 图片的contentMode
+图片的contentMode
 public var HHJContentMode: UIViewContentMode
 
-/// 显示的动画时长
+显示的动画时长
 public var showDuration: Double
 
-/// 是否允许图片缩放，默认允许
+是否允许图片缩放，默认允许
 public var isCanScale: Bool
 
-/// 缩放的最大比例，默认是4倍
+缩放的最大比例，默认是4倍
 public var maxScale: CGFloat
 
-/// 缩放的最小比例，默认是0.25
+缩放的最小比例，默认是0.25
 public var minScale: CGFloat
